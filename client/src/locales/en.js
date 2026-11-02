@@ -136,6 +136,61 @@ export default {
     }
   },
 
+  // Copilot
+  copilot: {
+    open: 'Ask Copilot',
+    title: 'Inventory Copilot',
+    subtitle: 'Answers from live inventory, order and demand data',
+    demoBadge: 'Demo mode',
+    demoHint: 'Scripted answers over real data. Set ANTHROPIC_API_KEY on the server to use Claude.',
+    liveBadge: 'Claude',
+    placeholder: 'Ask about stock, orders, demand or restocking...',
+    send: 'Send',
+    stop: 'Stop',
+    newChat: 'New chat',
+    close: 'Close',
+    you: 'You',
+    thinking: 'Thinking...',
+    shortcut: 'Ctrl/Cmd + J',
+    suggestions: {
+      restock: 'What should I restock with $3,000?',
+      lowStock: 'Which items are low on stock in Tokyo?',
+      fulfillment: 'Why was Q4 fulfillment so low?',
+      backlog: "How's the backlog?"
+    },
+    tools: {
+      get_inventory: 'Checking inventory',
+      get_low_stock: 'Finding low-stock items',
+      get_order_summary: 'Summarizing orders',
+      get_demand_forecasts: 'Reading demand forecasts',
+      get_backlog: 'Checking the backlog',
+      get_reports: 'Pulling performance reports',
+      get_restock_plan: 'Planning restock within budget',
+      draft_restock_order: 'Drafting the order'
+    },
+    draft: {
+      title: 'Draft restocking order',
+      total: 'Total',
+      leadTime: 'Lead time',
+      days: '{days} days',
+      confirm: 'Confirm order',
+      confirming: 'Placing order...',
+      placed: 'Order {number} placed.',
+      viewOrders: 'View in Orders',
+      failed: 'Could not place the order'
+    },
+    errors: {
+      refusal: 'Claude declined to answer that request.',
+      max_tokens: 'The answer was cut off. Try a narrower question.',
+      too_many_steps: 'That took too many steps. Try a more specific question.',
+      auth: 'The server\'s Claude credentials were rejected.',
+      rate_limit: 'Claude is rate limited right now. Try again shortly.',
+      api: 'Claude returned an error.',
+      connection: 'Could not reach Claude.',
+      network: 'Could not reach the Copilot service.'
+    }
+  },
+
   // Restocking
   restocking: {
     title: 'Restocking',
