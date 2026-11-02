@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: orders-view-review
+expected_outcome: |
+  A ranked report on Orders.vue with file:line evidence covering the repeated getOrdersByStatus() template calls, the index key in the All Orders item dropdown, and useI18n() called inside formatDate, each with a before/after fix; no source files modified; ends by offering to apply fixes.
