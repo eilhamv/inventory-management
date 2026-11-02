@@ -6,6 +6,9 @@ export default {
     orders: '注文',
     finance: '財務',
     demandForecast: '需要予測',
+    restocking: '補充発注',
+    backlog: 'バックログ',
+    reports: 'レポート',
     companyName: '触媒コンポーネンツ',
     subtitle: '在庫管理システム'
   },
@@ -112,6 +115,10 @@ export default {
     onTimeDelivery: '定時配達',
     itemsCount: '{count}件',
     quantity: '数量',
+    submittedOrders: '発注済みの注文',
+    noSubmittedOrders: '補充発注はまだありません。',
+    leadTime: 'リードタイム',
+    leadTimeDays: '{days}日',
     table: {
       orderNumber: '注文番号',
       orderId: '注文ID',
@@ -126,6 +133,91 @@ export default {
       status: 'ステータス',
       expectedDelivery: '予定配達日',
       actualDelivery: '実際の配達日'
+    }
+  },
+
+  // Restocking
+  restocking: {
+    title: '補充発注',
+    description: '予算を設定し、予測需要の高い品目から補充します',
+    budget: '利用可能な予算',
+    budgetHint: 'すべての需要ギャップを補充する費用は{amount}です',
+    recommendedItems: '推奨品目',
+    noRecommendations: '予算が不足しているため補充できる品目がありません。予算を増やしてください。',
+    orderTotal: '注文合計',
+    remaining: '残りの予算',
+    leadTime: '配達リードタイム',
+    leadTimeDays: '{days}日',
+    placeOrder: '発注する',
+    placing: '発注中...',
+    orderPlaced: '注文{number}を発注しました。{days}日後に配達予定です。',
+    viewInOrders: '注文で確認',
+    orderFailed: '発注に失敗しました',
+    table: {
+      item: '品目',
+      trend: 'トレンド',
+      demandGap: '需要ギャップ',
+      quantity: '発注数',
+      unitCost: '単価',
+      lineTotal: '小計',
+      leadTime: 'リードタイム'
+    }
+  },
+
+  // Backlog
+  backlog: {
+    title: 'バックログ管理',
+    description: '在庫不足を追跡して解消します',
+    loadError: 'バックログの読み込みに失敗しました',
+    highPriority: '優先度: 高',
+    mediumPriority: '優先度: 中',
+    lowPriority: '優先度: 低',
+    totalItems: 'バックログ項目の合計',
+    items: 'バックログ項目',
+    noItems: 'バックログはありません。すべての注文を処理できます。',
+    unitShort: '{count}個不足',
+    unitsShort: '{count}個不足',
+    dayCount: '{count}日',
+    daysCount: '{count}日',
+    table: {
+      orderId: '注文ID',
+      sku: 'SKU',
+      itemName: '品目名',
+      quantityNeeded: '必要数量',
+      quantityAvailable: '在庫数量',
+      shortage: '不足',
+      daysDelayed: '遅延日数',
+      priority: '優先度'
+    }
+  },
+
+  // Reports
+  reports: {
+    title: 'パフォーマンスレポート',
+    description: '四半期ごとの業績指標と月次トレンドを表示',
+    loadError: 'レポートの読み込みに失敗しました',
+    noData: '現在のフィルターに一致する注文はありません。',
+    quarterlyPerformance: '四半期別パフォーマンス',
+    monthlyRevenueTrend: '月次収益トレンド',
+    monthOverMonth: '前月比分析',
+    notApplicable: '該当なし',
+    table: {
+      quarter: '四半期',
+      totalOrders: '総注文数',
+      totalRevenue: '総収益',
+      avgOrderValue: '平均注文額',
+      fulfillmentRate: 'フルフィルメント率',
+      month: '月',
+      orders: '注文数',
+      revenue: '収益',
+      change: '増減',
+      growthRate: '成長率'
+    },
+    stats: {
+      totalRevenue: '総収益',
+      avgMonthlyRevenue: '月平均収益',
+      totalOrders: '総注文数',
+      bestQuarter: '最高業績の四半期'
     }
   },
 
@@ -201,6 +293,7 @@ export default {
   // Statuses
   status: {
     delivered: '配達済み',
+    submitted: '発注済み',
     shipped: '出荷済み',
     processing: '処理中',
     backordered: 'バックオーダー',

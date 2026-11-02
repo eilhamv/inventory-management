@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: dashboard-split
+expected_outcome: |
+  A structural analysis of Dashboard.vue with its template/script/style size split, a concrete decomposition into named child components with their props, and performance findings with file:line evidence such as repeated template method calls and the composable called inside formatDate, without modifying source files.
