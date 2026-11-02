@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from datetime import datetime, timedelta
-from typing import List, Optional
+from datetime import date, datetime, timedelta
+from typing import List, Literal, Optional
 from pydantic import BaseModel, Field
 from copilot import CopilotDeps, create_router as create_copilot_router
 from mock_data import inventory_items, orders, demand_forecasts, backlog_items, spending_summary, monthly_spending, category_spending, recent_transactions, purchase_orders
@@ -180,8 +180,23 @@ class MonthlyTrend(BaseModel):
     revenue: float
     delivered_count: int
 
+class CreateTaskRequest(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+    priority: Literal['high', 'medium', 'low'] = 'medium'
+    dueDate: date
+
+class Task(CreateTaskRequest):
+    id: str
+    status: Literal['pending', 'completed'] = 'pending'
+
 # Restocking orders live only in memory, like the rest of the mock data
 submitted_orders: List[dict] = []
+
+# User-created tasks, in memory too. IDs are strings ("TASK-1") so they never
+# collide with the integer IDs of the mock tasks in client/src/composables/useAuth.js,
+# which App.vue checks first when deleting or toggling.
+tasks: List[dict] = []
+task_sequence = 0
 
 # Increasing demand is restocked first, decreasing last
 TREND_PRIORITY = {'increasing': 0, 'stable': 1, 'decreasing': 2}
@@ -345,6 +360,43 @@ def create_restocking_order(request: CreateRestockOrderRequest):
 def get_restocking_orders():
     """Get submitted restocking orders, newest first"""
     return list(reversed(submitted_orders))
+
+def find_task(task_id: str) -> dict:
+    task = next((t for t in tasks if t['id'] == task_id), None)
+    if not task:
+        raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
+    return task
+
+@app.get("/api/tasks", response_model=List[Task])
+def get_tasks():
+    """Get user-created tasks, newest first (matching how the UI adds them)"""
+    return list(reversed(tasks))
+
+@app.post("/api/tasks", response_model=Task, status_code=201)
+def create_task(request: CreateTaskRequest):
+    """Create a pending task"""
+    global task_sequence
+    title = request.title.strip()
+    if not title:
+        raise HTTPException(status_code=400, detail="Task title cannot be blank")
+    task_sequence += 1
+    task = {**request.model_dump(), 'title': title, 'id': f"TASK-{task_sequence}", 'status': 'pending'}
+    tasks.append(task)
+    return task
+
+@app.patch("/api/tasks/{task_id}", response_model=Task)
+def toggle_task(task_id: str):
+    """Toggle a task between pending and completed; the UI sends no body"""
+    task = find_task(task_id)
+    task['status'] = 'completed' if task['status'] == 'pending' else 'pending'
+    return task
+
+@app.delete("/api/tasks/{task_id}", response_model=Task)
+def delete_task(task_id: str):
+    """Delete a task and return it"""
+    task = find_task(task_id)
+    tasks.remove(task)
+    return task
 
 @app.get("/api/dashboard/summary")
 def get_dashboard_summary(
