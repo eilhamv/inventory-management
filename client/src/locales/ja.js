@@ -136,6 +136,61 @@ export default {
     }
   },
 
+  // Copilot
+  copilot: {
+    open: 'Copilotに質問',
+    title: '在庫Copilot',
+    subtitle: '在庫・注文・需要のライブデータから回答します',
+    demoBadge: 'デモモード',
+    demoHint: '実データに基づくスクリプト回答です。サーバーにANTHROPIC_API_KEYを設定するとClaudeを使用します。',
+    liveBadge: 'Claude',
+    placeholder: '在庫、注文、需要、補充について質問...',
+    send: '送信',
+    stop: '停止',
+    newChat: '新しいチャット',
+    close: '閉じる',
+    you: 'あなた',
+    thinking: '考え中...',
+    shortcut: 'Ctrl/Cmd + J',
+    suggestions: {
+      restock: '予算30万円で何を補充すべき？',
+      lowStock: '東京で在庫不足の品目は？',
+      fulfillment: 'Q4のフルフィルメント率が低い理由は？',
+      backlog: 'バックログの状況は？'
+    },
+    tools: {
+      get_inventory: '在庫を確認中',
+      get_low_stock: '在庫不足の品目を検索中',
+      get_order_summary: '注文を集計中',
+      get_demand_forecasts: '需要予測を確認中',
+      get_backlog: 'バックログを確認中',
+      get_reports: 'レポートを取得中',
+      get_restock_plan: '予算内の補充を計画中',
+      draft_restock_order: '注文ドラフトを作成中'
+    },
+    draft: {
+      title: '補充注文ドラフト',
+      total: '合計',
+      leadTime: 'リードタイム',
+      days: '{days}日',
+      confirm: '注文を確定',
+      confirming: '発注中...',
+      placed: '注文{number}を発注しました。',
+      viewOrders: '注文で確認',
+      failed: '注文できませんでした'
+    },
+    errors: {
+      refusal: 'Claudeはこのリクエストへの回答を控えました。',
+      max_tokens: '回答が途中で切れました。質問を絞ってください。',
+      too_many_steps: '手順が多すぎます。より具体的に質問してください。',
+      auth: 'サーバーのClaude認証情報が拒否されました。',
+      rate_limit: 'Claudeのレート制限中です。しばらくしてから再試行してください。',
+      api: 'Claudeがエラーを返しました。',
+      connection: 'Claudeに接続できませんでした。',
+      network: 'Copilotサービスに接続できませんでした。'
+    }
+  },
+
   // Restocking
   restocking: {
     title: '補充発注',

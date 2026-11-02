@@ -131,6 +131,42 @@ export const api = {
     return response.data
   },
 
+  async getCopilotStatus() {
+    const response = await axios.get(`${API_BASE_URL}/copilot/status`)
+    return response.data
+  },
+
+  // Server-Sent Events over POST: EventSource only supports GET, so read the body stream directly
+  async streamCopilotChat(body, onEvent, signal) {
+    const response = await fetch(`${API_BASE_URL}/copilot/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal
+    })
+    if (!response.ok) {
+      throw new Error(`Copilot request failed (${response.status})`)
+    }
+
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+    while (true) {
+      const { value, done } = await reader.read()
+      if (done) break
+      buffer += decoder.decode(value, { stream: true })
+      // Events are separated by a blank line; keep any partial event for the next chunk
+      let boundary
+      while ((boundary = buffer.indexOf('\n\n')) !== -1) {
+        const raw = buffer.slice(0, boundary)
+        buffer = buffer.slice(boundary + 2)
+        const event = raw.match(/^event: (.*)$/m)
+        const data = raw.match(/^data: (.*)$/m)
+        if (event && data) onEvent(event[1], JSON.parse(data[1]))
+      }
+    }
+  },
+
   async createPurchaseOrder(purchaseOrderData) {
     const response = await axios.post(`${API_BASE_URL}/purchase-orders`, purchaseOrderData)
     return response.data

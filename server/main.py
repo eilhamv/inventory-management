@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime, timedelta
 from typing import List, Optional
 from pydantic import BaseModel, Field
+from copilot import CopilotDeps, create_router as create_copilot_router
 from mock_data import inventory_items, orders, demand_forecasts, backlog_items, spending_summary, monthly_spending, category_spending, recent_transactions, purchase_orders
 
 app = FastAPI(title="Factory Inventory Management System")
@@ -226,6 +227,30 @@ def build_restock_plan(budget: float) -> dict:
         'items': items
     }
 
+def price_restock_lines(lines):
+    """Price (sku, quantity) pairs from forecast data -> (items, total_value, lead_time_days).
+
+    Raises KeyError(sku) for an unknown SKU. Shared by order submission and the
+    copilot's draft orders so both quote identical prices.
+    """
+    forecasts_by_sku = {f['item_sku']: f for f in demand_forecasts}
+    items = []
+    for sku, quantity in lines:
+        forecast = forecasts_by_sku.get(sku)
+        if not forecast:
+            raise KeyError(sku)
+        items.append({
+            'sku': sku,
+            'name': forecast['item_name'],
+            'quantity': quantity,
+            'unit_price': forecast['unit_cost'],
+            'lead_time_days': forecast['lead_time_days']
+        })
+    total_value = round(sum(item['quantity'] * item['unit_price'] for item in items), 2)
+    # The order arrives when its slowest item does
+    lead_time_days = max((item['lead_time_days'] for item in items), default=0)
+    return items, total_value, lead_time_days
+
 # API endpoints
 @app.get("/")
 def root():
@@ -293,26 +318,14 @@ def get_restocking_recommendations(budget: float = Query(ge=0)):
 @app.post("/api/restocking/orders", response_model=SubmittedOrder, status_code=201)
 def create_restocking_order(request: CreateRestockOrderRequest):
     """Submit a restocking order; prices and lead times come from server data, not the client"""
-    forecasts_by_sku = {f['item_sku']: f for f in demand_forecasts}
-    items = []
-    for line in request.items:
-        forecast = forecasts_by_sku.get(line.sku)
-        if not forecast:
-            raise HTTPException(status_code=404, detail=f"SKU {line.sku} not found in demand forecast")
-        items.append({
-            'sku': line.sku,
-            'name': forecast['item_name'],
-            'quantity': line.quantity,
-            'unit_price': forecast['unit_cost'],
-            'lead_time_days': forecast['lead_time_days']
-        })
-
-    total_value = round(sum(item['quantity'] * item['unit_price'] for item in items), 2)
+    try:
+        items, total_value, lead_time_days = price_restock_lines(
+            [(line.sku, line.quantity) for line in request.items])
+    except KeyError as e:
+        raise HTTPException(status_code=404, detail=f"SKU {e.args[0]} not found in demand forecast")
     if total_value > request.budget:
         raise HTTPException(status_code=400, detail=f"Order total {total_value} exceeds budget {request.budget}")
 
-    # The order arrives when its slowest item does
-    lead_time_days = max(item['lead_time_days'] for item in items)
     order_date = datetime.now().replace(microsecond=0)
     sequence = len(submitted_orders) + 1
     order = {
@@ -459,6 +472,20 @@ def get_monthly_trends(
     for data in result:
         data['revenue'] = round(data['revenue'], 2)
     return result
+
+# Inventory Copilot (demo mode without credentials, Claude with them)
+app.include_router(create_copilot_router(CopilotDeps(
+    inventory_items=inventory_items,
+    orders=orders,
+    demand_forecasts=demand_forecasts,
+    get_backlog=get_backlog,
+    apply_filters=apply_filters,
+    filter_by_month=filter_by_month,
+    build_restock_plan=build_restock_plan,
+    price_restock_lines=price_restock_lines,
+    get_quarterly_reports=get_quarterly_reports,
+    get_monthly_trends=get_monthly_trends,
+)))
 
 if __name__ == "__main__":
     import uvicorn

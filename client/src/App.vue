@@ -49,6 +49,15 @@
       @close="showProfileDetails = false"
     />
 
+    <!-- Floating so it stays reachable when the nav bar overflows on narrow screens -->
+    <button v-if="!showCopilot" class="copilot-launcher" :title="t('copilot.shortcut')" @click="showCopilot = true">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      </svg>
+      {{ t('copilot.open') }}
+    </button>
+    <CopilotPanel :is-open="showCopilot" @close="showCopilot = false" />
+
     <TasksModal
       :is-open="showTasks"
       :tasks="tasks"
@@ -61,7 +70,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import { api } from './api'
 import { useAuth } from './composables/useAuth'
 import { useI18n } from './composables/useI18n'
@@ -70,6 +79,7 @@ import ProfileMenu from './components/ProfileMenu.vue'
 import ProfileDetailsModal from './components/ProfileDetailsModal.vue'
 import TasksModal from './components/TasksModal.vue'
 import LanguageSwitcher from './components/LanguageSwitcher.vue'
+import CopilotPanel from './components/CopilotPanel.vue'
 
 export default {
   name: 'App',
@@ -78,13 +88,25 @@ export default {
     ProfileMenu,
     ProfileDetailsModal,
     TasksModal,
-    LanguageSwitcher
+    LanguageSwitcher,
+    CopilotPanel
   },
   setup() {
     const { currentUser } = useAuth()
     const { t } = useI18n()
     const showProfileDetails = ref(false)
     const showTasks = ref(false)
+    const showCopilot = ref(false)
+
+    // Ctrl/Cmd+J toggles the copilot from anywhere in the app
+    const onShortcut = (event) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'j') {
+        event.preventDefault()
+        showCopilot.value = !showCopilot.value
+      }
+    }
+    onMounted(() => window.addEventListener('keydown', onShortcut))
+    onBeforeUnmount(() => window.removeEventListener('keydown', onShortcut))
     const apiTasks = ref([])
 
     // Merge mock tasks from currentUser with API tasks
@@ -155,6 +177,7 @@ export default {
     onMounted(loadTasks)
 
     return {
+      showCopilot,
       t,
       showProfileDetails,
       showTasks,
@@ -209,6 +232,30 @@ body {
 .nav-container > .nav-tabs {
   margin-left: auto;
   margin-right: 1rem;
+}
+
+.copilot-launcher {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 900;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.125rem;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.25);
+  border: 1px solid #0f172a;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 0.813rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.copilot-launcher:hover {
+  background: #1e293b;
 }
 
 .nav-container > .language-switcher {
